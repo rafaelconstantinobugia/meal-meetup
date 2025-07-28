@@ -149,7 +149,8 @@
   }
   
   .glass-card {
-    @apply backdrop-blur-xl bg-card/80 border border-border/50 shadow-soft;
+    @apply backdrop-blur-xl bg-card/80 border border-border/50;
+    box-shadow: var(--shadow-soft);
   }
   
   /* iOS-style buttons */
