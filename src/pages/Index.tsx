@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { SwipeScreen } from "./SwipeScreen";
+import { EnhancedSwipeScreen } from "@/components/EnhancedSwipeScreen";
 import { User, Heart, Users } from "lucide-react";
 
 const Index = () => {
@@ -44,7 +44,7 @@ const Index = () => {
   }
 
   if (user && hasProfile) {
-    return <SwipeScreen />;
+    return <EnhancedSwipeScreen />;
   }
 
   return (

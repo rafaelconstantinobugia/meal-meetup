@@ -47,6 +47,41 @@ export type Database = {
         }
         Relationships: []
       }
+      match_queue: {
+        Row: {
+          created_at: string
+          dish_id: string
+          expires_at: string | null
+          id: string
+          priority_score: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dish_id: string
+          expires_at?: string | null
+          id?: string
+          priority_score?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dish_id?: string
+          expires_at?: string | null
+          id?: string
+          priority_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_queue_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string
@@ -90,6 +125,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      matching_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          max_age: number | null
+          max_distance_km: number | null
+          min_age: number | null
+          preferred_meal_times: string[] | null
+          same_gender_only: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          preferred_meal_times?: string[] | null
+          same_gender_only?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_age?: number | null
+          max_distance_km?: number | null
+          min_age?: number | null
+          preferred_meal_times?: string[] | null
+          same_gender_only?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -165,6 +236,41 @@ export type Database = {
         }
         Relationships: []
       }
+      swipe_history: {
+        Row: {
+          action: string
+          created_at: string
+          dish_id: string
+          id: string
+          target_user_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          dish_id: string
+          id?: string
+          target_user_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          dish_id?: string
+          id?: string
+          target_user_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipe_history_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_dish_preferences: {
         Row: {
           dish_id: string
@@ -202,7 +308,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_compatibility_score: {
+        Args: { user1_id: string; user2_id: string; dish_id: string }
+        Returns: number
+      }
     }
     Enums: {
       availability: "lunch" | "dinner" | "both"
