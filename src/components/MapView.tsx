@@ -5,16 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { useRestaurants } from '@/hooks/useRestaurants';
 import { MapPin, Users, Utensils, Navigation, Filter, Heart } from 'lucide-react';
-
-// Temporary Mapbox token input - in production this would be from environment
-const TEMP_MAPBOX_TOKEN = 'pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbTB4eHc4MHMwZTFnMnNwdGtweTc4bzltIn0.example';
 
 interface FoodieLocation {
   id: string;
   name: string;
-  avatar?: string;
   restaurant: string;
   dish: string;
   coordinates: [number, number];
@@ -22,7 +17,7 @@ interface FoodieLocation {
   joinedTime: string;
 }
 
-// Mock data for foodie locations
+// Mock data
 const mockFoodieLocations: FoodieLocation[] = [
   {
     id: '1',
@@ -41,15 +36,6 @@ const mockFoodieLocations: FoodieLocation[] = [
     coordinates: [-74.0100, 40.7150],
     isOnline: true,
     joinedTime: '5 min ago'
-  },
-  {
-    id: '3',
-    name: 'Emma',
-    restaurant: 'The Garden',
-    dish: 'Mediterranean Bowl',
-    coordinates: [-74.0080, 40.7100],
-    isOnline: false,
-    joinedTime: '25 min ago'
   }
 ];
 
@@ -58,9 +44,8 @@ export const MapView = () => {
   const map = useRef<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<FoodieLocation | null>(null);
   const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(!TEMP_MAPBOX_TOKEN);
+  const [showTokenInput, setShowTokenInput] = useState(true);
   const { getCurrentPosition, coordinates } = useGeolocation();
-  const { restaurants, searchNearbyRestaurants } = useRestaurants();
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -78,25 +63,22 @@ export const MapView = () => {
           bearing: 0
         });
 
-        // Add navigation controls
         map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-        // Add user location marker
         if (coordinates) {
-          new mapboxgl.Marker({ color: '#3b82f6' })
+          new mapboxgl.Marker({ color: '#f97316' })
             .setLngLat([coordinates.longitude, coordinates.latitude])
             .setPopup(new mapboxgl.Popup().setHTML('<p>Your location</p>'))
             .addTo(map.current);
         }
 
-        // Add foodie location markers
         mockFoodieLocations.forEach((location) => {
           const el = document.createElement('div');
           el.className = 'foodie-marker';
           el.innerHTML = `
-            <div class="w-12 h-12 rounded-full border-3 border-white shadow-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center cursor-pointer transform hover:scale-110 transition-transform duration-200 ${location.isOnline ? 'animate-pulse' : ''}">
+            <div class="w-12 h-12 rounded-full border-3 border-white shadow-lg bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center cursor-pointer transform hover:scale-110 transition-transform duration-200 ${location.isOnline ? 'animate-pulse' : ''}">
               <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                <span class="text-sm font-bold text-primary">${location.name[0]}</span>
+                <span class="text-sm font-bold text-orange-500">${location.name[0]}</span>
               </div>
             </div>
           `;
@@ -124,14 +106,6 @@ export const MapView = () => {
     };
   }, [mapboxToken, coordinates]);
 
-  const handleGetLocation = async () => {
-    try {
-      await getCurrentPosition();
-    } catch (error) {
-      console.error('Failed to get location:', error);
-    }
-  };
-
   if (showTokenInput) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-background to-muted">
@@ -141,7 +115,7 @@ export const MapView = () => {
               <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Enable Map</h2>
               <p className="text-muted-foreground">
-                Enter your Mapbox token to view foodie locations on the map
+                Enter your Mapbox token to view foodie locations
               </p>
             </div>
             
@@ -154,22 +128,17 @@ export const MapView = () => {
                 className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 backdrop-blur-sm"
               />
               
-                <Button
-                  onClick={() => setShowTokenInput(false)}
-                  disabled={!mapboxToken}
-                  className="w-full modern-button"
-                >
+              <Button
+                onClick={() => setShowTokenInput(false)}
+                disabled={!mapboxToken}
+                className="w-full modern-button"
+              >
                 Initialize Map
               </Button>
               
               <p className="text-xs text-muted-foreground text-center">
                 Get your token from{' '}
-                <a
-                  href="https://mapbox.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
+                <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                   mapbox.com
                 </a>
               </p>
@@ -202,12 +171,12 @@ export const MapView = () => {
       </div>
 
       {/* Map Container */}
-      <div ref={mapContainer} className="absolute inset-0 map-container" />
+      <div ref={mapContainer} className="absolute inset-0 rounded-xl" />
 
       {/* Location Button */}
       <div className="absolute bottom-24 right-4 z-40">
         <Button
-          onClick={handleGetLocation}
+          onClick={getCurrentPosition}
           size="icon"
           className="w-12 h-12 rounded-full modern-button"
         >
