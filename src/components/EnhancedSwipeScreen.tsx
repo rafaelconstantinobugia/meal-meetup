@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { DishCard } from "@/components/DishCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Heart, RotateCcw, Zap, Users } from "lucide-react";
+import { useHaptics } from "@/hooks/useHaptics";
+import { useCapacitor } from "@/hooks/useCapacitor";
+import { ImpactStyle } from "@capacitor/haptics";
+import { Loader2, Heart, RotateCcw, Zap, Users, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +39,8 @@ export const EnhancedSwipeScreen = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [waitingForMatch, setWaitingForMatch] = useState(false);
   const { toast } = useToast();
+  const { impact, vibrate, notification } = useHaptics();
+  const { isNative, platform } = useCapacitor();
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -158,6 +163,13 @@ export const EnhancedSwipeScreen = () => {
     const currentDish = dishes[currentDishIndex];
     if (!currentDish) return;
 
+    // Add haptic feedback for mobile
+    if (liked) {
+      await impact(ImpactStyle.Medium);
+    } else {
+      await impact(ImpactStyle.Light);
+    }
+
     const targetDishId = dishId || currentDish.id;
     setSwiping(true);
 
@@ -185,6 +197,10 @@ export const EnhancedSwipeScreen = () => {
 
       // Handle matches
       if (result.matched && result.matches?.length > 0) {
+        // Strong haptic feedback for matches
+        await notification();
+        await vibrate();
+        
         setRecentMatches(result.matches);
         setShowMatchModal(true);
         toast({
@@ -219,6 +235,9 @@ export const EnhancedSwipeScreen = () => {
 
   const handleUndo = async () => {
     if (swipeHistory.length === 0 || currentDishIndex === 0) return;
+
+    // Light haptic feedback for undo
+    await impact(ImpactStyle.Light);
 
     const lastSwipe = swipeHistory[swipeHistory.length - 1];
     
@@ -380,6 +399,12 @@ export const EnhancedSwipeScreen = () => {
             Find Your Meal Buddy
           </h1>
           <div className="flex items-center gap-2">
+            {isNative && (
+              <Badge variant="outline" className="text-xs text-white border-white/30">
+                <Smartphone className="h-3 w-3 mr-1" />
+                {platform}
+              </Badge>
+            )}
             <Badge variant="secondary" className="text-xs">
               {currentDishIndex + 1} of {dishes.length}
             </Badge>
