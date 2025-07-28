@@ -6,19 +6,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { PhotoUpload } from "@/components/PhotoUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X, MapPin } from "lucide-react";
 
 export const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const [profile, setProfile] = useState({
     name: "",
     bio: "",
     city: "",
     availability: "both" as "lunch" | "dinner" | "both",
     food_preferences: [] as string[],
-    allergies: [] as string[]
+    allergies: [] as string[],
+    profile_picture_url: ""
   });
   const [newPreference, setNewPreference] = useState("");
   const [newAllergy, setNewAllergy] = useState("");
@@ -47,7 +50,8 @@ export const ProfileSetup = () => {
           city: data.city || "",
           availability: data.availability || "both",
           food_preferences: data.food_preferences || [],
-          allergies: data.allergies || []
+          allergies: data.allergies || [],
+          profile_picture_url: data.profile_picture_url || ""
         });
       }
     } catch (error) {
@@ -89,6 +93,49 @@ export const ProfileSetup = () => {
     });
   };
 
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location not supported",
+        description: "Your browser doesn't support location detection.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDetectingLocation(true);
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 10000,
+          enableHighAccuracy: false
+        });
+      });
+
+      // Simple city detection - in production, use a proper geocoding service
+      const { latitude, longitude } = position.coords;
+      
+      // For demo purposes, we'll just ask the user to confirm their city
+      toast({
+        title: "Location detected",
+        description: "Please confirm your city in the form below.",
+      });
+      
+      // In a real app, you'd reverse geocode these coordinates to get the city
+      console.log('Detected location:', { latitude, longitude });
+      
+    } catch (error) {
+      console.error('Location detection failed:', error);
+      toast({
+        title: "Location detection failed",
+        description: "Please enter your city manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setDetectingLocation(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!profile.name.trim() || !profile.city.trim()) {
       toast({
@@ -113,7 +160,8 @@ export const ProfileSetup = () => {
           city: profile.city.trim(),
           availability: profile.availability,
           food_preferences: profile.food_preferences,
-          allergies: profile.allergies
+          allergies: profile.allergies,
+          profile_picture_url: profile.profile_picture_url
         });
 
       if (error) throw error;
@@ -154,6 +202,15 @@ export const ProfileSetup = () => {
               <CardTitle>Your Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Profile Photo */}
+              <div className="text-center">
+                <label className="text-sm font-medium mb-4 block">Profile Photo</label>
+                <PhotoUpload
+                  currentPhotoUrl={profile.profile_picture_url}
+                  onPhotoUploaded={(url) => setProfile({ ...profile, profile_picture_url: url })}
+                />
+              </div>
+
               {/* Name */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Name *</label>
@@ -182,11 +239,24 @@ export const ProfileSetup = () => {
               {/* City */}
               <div>
                 <label className="text-sm font-medium mb-2 block">City *</label>
-                <Input
-                  value={profile.city}
-                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                  placeholder="Where are you based?"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={profile.city}
+                    onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                    placeholder="Where are you based?"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={detectLocation}
+                    disabled={detectingLocation}
+                    className="flex items-center gap-2 px-3"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    {detectingLocation ? "Detecting..." : "Detect"}
+                  </Button>
+                </div>
               </div>
 
               {/* Availability */}
