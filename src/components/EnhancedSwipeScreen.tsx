@@ -56,12 +56,18 @@ export const EnhancedSwipeScreen = () => {
 
       const swipedDishIds = swipedDishes?.map(s => s.dish_id) || [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('dishes')
         .select('*')
         .eq('available_date', new Date().toISOString().split('T')[0])
-        .not('id', 'in', `(${swipedDishIds.length > 0 ? swipedDishIds.map(id => `'${id}'`).join(',') : "''"})`)
         .order('created_at', { ascending: false });
+
+      // Only add the not.in filter if there are actually swiped dishes
+      if (swipedDishIds.length > 0) {
+        query = query.not('id', 'in', `(${swipedDishIds.map(id => `'${id}'`).join(',')})`);
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       setDishes(data || []);
