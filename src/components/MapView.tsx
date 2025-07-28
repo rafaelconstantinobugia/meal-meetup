@@ -154,11 +154,11 @@ export const MapView = () => {
                 className="w-full px-4 py-3 rounded-xl border border-border bg-background/50 backdrop-blur-sm"
               />
               
-              <Button
-                onClick={() => setShowTokenInput(false)}
-                disabled={!mapboxToken}
-                className="w-full ios-button"
-              >
+                <Button
+                  onClick={() => setShowTokenInput(false)}
+                  disabled={!mapboxToken}
+                  className="w-full modern-button"
+                >
                 Initialize Map
               </Button>
               
@@ -209,7 +209,7 @@ export const MapView = () => {
         <Button
           onClick={handleGetLocation}
           size="icon"
-          className="w-12 h-12 rounded-full ios-button shadow-xl"
+          className="w-12 h-12 rounded-full modern-button"
         >
           <Navigation className="h-5 w-5" />
         </Button>
@@ -247,7 +247,7 @@ export const MapView = () => {
                   </div>
                   
                   <div className="flex gap-2">
-                    <Button size="sm" className="flex-1 ios-button">
+                    <Button size="sm" className="flex-1 modern-button">
                       <Heart className="h-4 w-4 mr-1" />
                       Connect
                     </Button>
