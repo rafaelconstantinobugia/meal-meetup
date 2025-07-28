@@ -14,7 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      dishes: {
+        Row: {
+          available_date: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          mood_tags: string[] | null
+          name: string
+        }
+        Insert: {
+          available_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          mood_tags?: string[] | null
+          name: string
+        }
+        Update: {
+          available_date?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          meal_type?: Database["public"]["Enums"]["meal_type"]
+          mood_tags?: string[] | null
+          name?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          dish_id: string
+          id: string
+          meeting_location: string | null
+          meeting_time: string | null
+          status: Database["public"]["Enums"]["match_status"]
+          updated_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          dish_id: string
+          id?: string
+          meeting_location?: string | null
+          meeting_time?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          dish_id?: string
+          id?: string
+          meeting_location?: string | null
+          meeting_time?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          updated_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          id: string
+          match_id: string
+          sender_id: string
+          sent_at: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          match_id: string
+          sender_id: string
+          sent_at?: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          match_id?: string
+          sender_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          allergies: string[] | null
+          availability: Database["public"]["Enums"]["availability"]
+          bio: string | null
+          city: string
+          created_at: string
+          food_preferences: string[] | null
+          id: string
+          name: string
+          profile_picture_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allergies?: string[] | null
+          availability?: Database["public"]["Enums"]["availability"]
+          bio?: string | null
+          city: string
+          created_at?: string
+          food_preferences?: string[] | null
+          id?: string
+          name: string
+          profile_picture_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allergies?: string[] | null
+          availability?: Database["public"]["Enums"]["availability"]
+          bio?: string | null
+          city?: string
+          created_at?: string
+          food_preferences?: string[] | null
+          id?: string
+          name?: string
+          profile_picture_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_dish_preferences: {
+        Row: {
+          dish_id: string
+          id: string
+          liked: boolean
+          swiped_at: string
+          user_id: string
+        }
+        Insert: {
+          dish_id: string
+          id?: string
+          liked: boolean
+          swiped_at?: string
+          user_id: string
+        }
+        Update: {
+          dish_id?: string
+          id?: string
+          liked?: boolean
+          swiped_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_dish_preferences_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +205,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      availability: "lunch" | "dinner" | "both"
+      match_status:
+        | "pending"
+        | "matched"
+        | "meetup_confirmed"
+        | "completed"
+        | "cancelled"
+      meal_type: "breakfast" | "lunch" | "dinner" | "snack"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +339,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      availability: ["lunch", "dinner", "both"],
+      match_status: [
+        "pending",
+        "matched",
+        "meetup_confirmed",
+        "completed",
+        "cancelled",
+      ],
+      meal_type: ["breakfast", "lunch", "dinner", "snack"],
+    },
   },
 } as const
