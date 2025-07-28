@@ -162,6 +162,66 @@ export type Database = {
         }
         Relationships: []
       }
+      meetup_coordination: {
+        Row: {
+          both_users_confirmed: boolean | null
+          confirmed_location: string | null
+          confirmed_time: string | null
+          created_at: string
+          emergency_contact_shared: boolean | null
+          id: string
+          match_id: string
+          restaurant_suggestion_id: string | null
+          safety_checklist_completed: boolean | null
+          updated_at: string
+          user1_confirmed: boolean | null
+          user2_confirmed: boolean | null
+        }
+        Insert: {
+          both_users_confirmed?: boolean | null
+          confirmed_location?: string | null
+          confirmed_time?: string | null
+          created_at?: string
+          emergency_contact_shared?: boolean | null
+          id?: string
+          match_id: string
+          restaurant_suggestion_id?: string | null
+          safety_checklist_completed?: boolean | null
+          updated_at?: string
+          user1_confirmed?: boolean | null
+          user2_confirmed?: boolean | null
+        }
+        Update: {
+          both_users_confirmed?: boolean | null
+          confirmed_location?: string | null
+          confirmed_time?: string | null
+          created_at?: string
+          emergency_contact_shared?: boolean | null
+          id?: string
+          match_id?: string
+          restaurant_suggestion_id?: string | null
+          safety_checklist_completed?: boolean | null
+          updated_at?: string
+          user1_confirmed?: boolean | null
+          user2_confirmed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetup_coordination_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_coordination_restaurant_suggestion_id_fkey"
+            columns: ["restaurant_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -236,6 +296,59 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_suggestions: {
+        Row: {
+          created_at: string
+          cuisine_type: string | null
+          google_place_id: string | null
+          id: string
+          match_id: string
+          price_range: string | null
+          rating: number | null
+          restaurant_address: string
+          restaurant_name: string
+          status: string | null
+          suggested_by: string
+          suggested_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          cuisine_type?: string | null
+          google_place_id?: string | null
+          id?: string
+          match_id: string
+          price_range?: string | null
+          rating?: number | null
+          restaurant_address: string
+          restaurant_name: string
+          status?: string | null
+          suggested_by: string
+          suggested_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          cuisine_type?: string | null
+          google_place_id?: string | null
+          id?: string
+          match_id?: string
+          price_range?: string | null
+          rating?: number | null
+          restaurant_address?: string
+          restaurant_name?: string
+          status?: string | null
+          suggested_by?: string
+          suggested_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_suggestions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       swipe_history: {
         Row: {
           action: string
@@ -267,6 +380,38 @@ export type Database = {
             columns: ["dish_id"]
             isOneToOne: false
             referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      typing_indicators: {
+        Row: {
+          id: string
+          is_typing: boolean
+          match_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_typing?: boolean
+          match_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_typing?: boolean
+          match_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
             referencedColumns: ["id"]
           },
         ]
@@ -311,6 +456,14 @@ export type Database = {
       calculate_compatibility_score: {
         Args: { user1_id: string; user2_id: string; dish_id: string }
         Returns: number
+      }
+      confirm_meetup: {
+        Args: { p_match_id: string }
+        Returns: undefined
+      }
+      update_typing_indicator: {
+        Args: { p_match_id: string; p_is_typing: boolean }
+        Returns: undefined
       }
     }
     Enums: {

@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Send, MapPin, Check } from "lucide-react";
+import { ArrowLeft, Send, MapPin, Check, Clock, Camera, Plus, Star } from "lucide-react";
 
 interface Message {
   id: string;
   content: string;
   sender_id: string;
   sent_at: string;
+  type?: string;
 }
 
 interface MatchInfo {
@@ -28,11 +30,23 @@ interface MatchInfo {
   };
 }
 
+interface RestaurantSuggestion {
+  id: string;
+  restaurant_name: string;
+  restaurant_address: string;
+  cuisine_type?: string;
+  rating?: number;
+  suggested_by: string;
+  status: string;
+}
+
 const icebreakers = [
   "Been there before?",
   "Are you a spicy person?",
   "What's your favorite thing about this dish?",
   "Any dietary preferences I should know about?",
+  "What time works best for you?",
+  "Do you know any good spots for this?"
 ];
 
 export const Chat = () => {
@@ -46,18 +60,93 @@ export const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSuggestion[]>([]);
+  const [showRestaurantForm, setShowRestaurantForm] = useState(false);
+  const [restaurantForm, setRestaurantForm] = useState({
+    name: "",
+    address: "",
+    cuisine: "",
+    time: ""
+  });
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (matchId) {
       fetchMatchInfo();
       fetchMessages();
+      fetchRestaurantSuggestions();
       getCurrentUser();
+      setupRealtime();
     }
   }, [matchId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Setup real-time subscriptions
+  const setupRealtime = () => {
+    // Listen for new messages
+    const messagesChannel = supabase
+      .channel(`messages-${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `match_id=eq.${matchId}`
+        },
+        () => {
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    // Listen for typing indicators
+    const typingChannel = supabase
+      .channel(`typing-${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'typing_indicators',
+          filter: `match_id=eq.${matchId}`
+        },
+         (payload: any) => {
+           if (payload.new && payload.new.user_id !== currentUserId) {
+             setOtherUserTyping(payload.new.is_typing);
+           }
+         }
+      )
+      .subscribe();
+
+    // Listen for restaurant suggestions
+    const restaurantChannel = supabase
+      .channel(`restaurants-${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurant_suggestions',
+          filter: `match_id=eq.${matchId}`
+        },
+        () => {
+          fetchRestaurantSuggestions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(typingChannel);
+      supabase.removeChannel(restaurantChannel);
+    };
+  };
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -126,6 +215,46 @@ export const Chat = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchRestaurantSuggestions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('restaurant_suggestions')
+        .select('*')
+        .eq('match_id', matchId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRestaurantSuggestions(data || []);
+    } catch (error) {
+      console.error('Error fetching restaurant suggestions:', error);
+    }
+  };
+
+  // Handle typing indicators
+  const handleTyping = async () => {
+    if (!isTyping) {
+      setIsTyping(true);
+      await supabase.rpc('update_typing_indicator', {
+        p_match_id: matchId,
+        p_is_typing: true
+      });
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing after 3 seconds
+    typingTimeoutRef.current = setTimeout(async () => {
+      setIsTyping(false);
+      await supabase.rpc('update_typing_indicator', {
+        p_match_id: matchId,
+        p_is_typing: false
+      });
+    }, 3000);
   };
 
   const sendMessage = async (content: string) => {
@@ -301,21 +430,146 @@ export const Chat = () => {
         </div>
       )}
 
+      {/* Typing Indicator */}
+      {otherUserTyping && (
+        <div className="px-4 py-2">
+          <div className="flex justify-start">
+            <div className="bg-muted text-foreground px-4 py-2 rounded-2xl text-sm">
+              <span className="animate-pulse">{matchInfo.other_user.name} is typing...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restaurant Suggestions */}
+      {restaurantSuggestions.length > 0 && (
+        <div className="p-4 border-t">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Restaurant Suggestions
+          </h3>
+          <div className="space-y-2">
+            {restaurantSuggestions.map((suggestion) => (
+              <Card key={suggestion.id} className="shadow-card">
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{suggestion.restaurant_name}</h4>
+                      <p className="text-sm text-muted-foreground">{suggestion.restaurant_address}</p>
+                      {suggestion.cuisine_type && (
+                        <p className="text-xs text-muted-foreground mt-1">{suggestion.cuisine_type}</p>
+                      )}
+                      {suggestion.rating && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-xs">{suggestion.rating}</span>
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant={suggestion.status === 'accepted' ? 'default' : 'outline'}>
+                      {suggestion.status}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Restaurant Form */}
+      {showRestaurantForm && (
+        <div className="p-4 border-t bg-muted/20">
+          <h3 className="font-semibold mb-3">Suggest a Restaurant</h3>
+          <div className="space-y-3">
+            <Input
+              placeholder="Restaurant name"
+              value={restaurantForm.name}
+              onChange={(e) => setRestaurantForm({...restaurantForm, name: e.target.value})}
+            />
+            <Input
+              placeholder="Address"
+              value={restaurantForm.address}
+              onChange={(e) => setRestaurantForm({...restaurantForm, address: e.target.value})}
+            />
+            <div className="flex gap-2">
+              <Input
+                placeholder="Cuisine type"
+                value={restaurantForm.cuisine}
+                onChange={(e) => setRestaurantForm({...restaurantForm, cuisine: e.target.value})}
+                className="flex-1"
+              />
+              <Input
+                type="datetime-local"
+                value={restaurantForm.time}
+                onChange={(e) => setRestaurantForm({...restaurantForm, time: e.target.value})}
+                className="flex-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowRestaurantForm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await supabase.from('restaurant_suggestions').insert({
+                      match_id: matchId,
+                      suggested_by: currentUserId,
+                      restaurant_name: restaurantForm.name,
+                      restaurant_address: restaurantForm.address,
+                      cuisine_type: restaurantForm.cuisine,
+                      suggested_time: restaurantForm.time ? new Date(restaurantForm.time).toISOString() : null
+                    });
+                    setRestaurantForm({ name: "", address: "", cuisine: "", time: "" });
+                    setShowRestaurantForm(false);
+                    toast({ title: "Restaurant suggested!", description: "Your suggestion has been shared." });
+                  } catch (error) {
+                    toast({ title: "Error", description: "Failed to suggest restaurant.", variant: "destructive" });
+                  }
+                }}
+                disabled={!restaurantForm.name || !restaurantForm.address}
+                className="food-button-primary flex-1"
+              >
+                Suggest
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Message Input */}
       <div className="p-4 border-t bg-background">
-        <div className="flex gap-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage(newMessage)}
-            className="flex-1"
-          />
+        <div className="flex gap-2 items-end">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowRestaurantForm(!showRestaurantForm)}
+            className="mb-2"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <Input
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
+              placeholder="Type a message..."
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage(newMessage)}
+              className="w-full"
+            />
+          </div>
           <Button
             onClick={() => sendMessage(newMessage)}
             disabled={!newMessage.trim()}
             size="icon"
-            className="food-button-primary"
+            className="food-button-primary mb-2"
           >
             <Send className="h-4 w-4" />
           </Button>
