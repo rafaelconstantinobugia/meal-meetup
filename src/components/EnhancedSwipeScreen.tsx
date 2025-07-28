@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DishCard } from "@/components/DishCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ interface SwipeMatch {
 }
 
 export const EnhancedSwipeScreen = () => {
+  const navigate = useNavigate();
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -189,7 +191,7 @@ export const EnhancedSwipeScreen = () => {
               <Button
                 onClick={() => {
                   setShowMatchModal(false);
-                  window.location.href = '/matches';
+                  navigate('/matches');
                 }}
                 className="modern-button flex-1"
               >

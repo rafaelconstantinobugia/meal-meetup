@@ -132,7 +132,7 @@ export const RestaurantSuggestions = ({ city, dishName }: RestaurantSuggestionsP
                 size="sm"
                 className="ml-2"
                 onClick={() => {
-                  // In production, open maps app or restaurant website
+                  // Open in new tab for external maps
                   const searchQuery = encodeURIComponent(`${restaurant.name} ${restaurant.address}`);
                   window.open(`https://www.google.com/maps/search/${searchQuery}`, '_blank');
                 }}
