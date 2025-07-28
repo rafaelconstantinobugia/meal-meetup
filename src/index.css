@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* iOS 26 Design System */
+/* Meal Meetup Design System - Food-Inspired */
 
 @layer base {
   :root {
@@ -27,8 +27,8 @@
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
     
-    /* Accent - Vibrant Yellow */
-    --accent: 45 93% 47%;
+    /* Accent - Golden Yellow (appetite stimulating) */
+    --accent: 45 100% 60%;
     --accent-foreground: 0 0% 9%;
     
     /* Destructive - Clean Red */
@@ -47,10 +47,11 @@
     --chart-4: 0 84% 60%;
     --chart-5: 263 70% 50%;
     
-    /* Simple gradients */
+    /* Food-inspired gradients */
     --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 63%));
-    --gradient-warm: linear-gradient(135deg, hsl(25 95% 53%), hsl(45 93% 47%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-warm: linear-gradient(135deg, hsl(25 95% 53%), hsl(45 100% 60%));
+    --gradient-fresh: linear-gradient(135deg, hsl(120 50% 55%), hsl(85 60% 60%));
+    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(30 20% 98%));
     
     /* Clean shadows */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
@@ -98,6 +99,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
   /* iOS-style scrollbars */
   ::-webkit-scrollbar {
     width: 4px;
@@ -119,7 +126,7 @@
 }
 
 @layer components {
-  /* Clean modern components */
+  /* Food-inspired components */
   .glass {
     @apply backdrop-blur-sm bg-white/80 border border-white/20;
   }
@@ -129,29 +136,63 @@
     box-shadow: var(--shadow);
   }
   
-  /* Modern buttons */
+  /* Enhanced modern buttons */
   .modern-button {
-    @apply relative overflow-hidden rounded-2xl px-6 py-3 font-medium transition-all duration-200;
+    @apply relative overflow-hidden rounded-2xl px-6 py-3 font-semibold transition-all duration-200;
     @apply bg-primary text-primary-foreground;
     @apply hover:scale-[1.02] active:scale-[0.98];
-    background: var(--gradient-primary);
-    box-shadow: var(--shadow);
+    background: var(--gradient-warm);
+    box-shadow: var(--shadow-md);
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .modern-button:hover {
+    box-shadow: var(--shadow-lg);
   }
   
   .modern-button-secondary {
-    @apply relative overflow-hidden rounded-2xl px-6 py-3 font-medium transition-all duration-200;
+    @apply relative overflow-hidden rounded-2xl px-6 py-3 font-semibold transition-all duration-200;
     @apply bg-secondary text-secondary-foreground border border-border;
     @apply hover:scale-[1.02] active:scale-[0.98];
     box-shadow: var(--shadow-sm);
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  /* Food-themed utilities */
+  .dish-card {
+    @apply bg-card rounded-3xl overflow-hidden;
+    @apply hover:scale-[1.02] transition-all duration-300;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .appetite-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    background: var(--gradient-warm);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .food-button-primary {
+    @apply modern-button;
+  }
+  
+  .food-button-secondary {
+    @apply relative overflow-hidden rounded-2xl px-6 py-3 font-medium transition-all duration-200;
+    @apply bg-white/90 text-foreground border border-border;
+    @apply hover:scale-[1.02] active:scale-[0.98] hover:bg-white;
+    box-shadow: var(--shadow);
+    font-family: 'Montserrat', sans-serif;
   }
   
   /* Safe area utilities */
   .pt-safe {
-    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
   }
   
   .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
   }
   
   /* Bottom navigation safe area */
@@ -159,9 +200,17 @@
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
   
-  /* Animation utilities */
+  /* Enhanced animations */
   .animate-slide-in-right {
-    animation: slide-in-right 0.3s ease-out;
+    animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .animate-bounce-in {
+    animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out;
   }
   
   @keyframes slide-in-right {
@@ -171,6 +220,34 @@
     }
     to {
       transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes bounce-in {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fade-in-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
       opacity: 1;
     }
   }

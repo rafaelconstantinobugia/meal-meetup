@@ -243,8 +243,8 @@ export const EnhancedSwipeScreen = () => {
       {/* Header */}
       <div className="pt-safe p-6 pb-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Find Your Meal Buddy</h1>
-          <Badge variant="secondary" className="text-xs">
+          <h1 className="text-2xl font-bold appetite-text">Find Your Meal Buddy</h1>
+          <Badge variant="secondary" className="text-xs font-medium">
             {currentIndex + 1} of {dishes.length}
           </Badge>
         </div>
@@ -264,14 +264,14 @@ export const EnhancedSwipeScreen = () => {
           <Button
             onClick={() => handleSwipe(false)}
             disabled={swiping}
-            className="flex-1 py-4 rounded-2xl border-2 border-muted text-muted-foreground font-semibold transition-all duration-200 hover:border-destructive hover:text-destructive active:scale-95 bg-transparent"
+            className="food-button-secondary flex-1 py-4"
           >
             Skip
           </Button>
           <Button
             onClick={() => handleSwipe(true)}
             disabled={swiping}
-            className="modern-button flex-1 py-4"
+            className="food-button-primary flex-1 py-4"
           >
             {swiping ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
