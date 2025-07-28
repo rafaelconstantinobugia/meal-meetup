@@ -47,6 +47,44 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          created_at: string
+          feedback_text: string | null
+          id: string
+          match_id: string
+          rating: number
+          user_id: string
+          would_meet_again: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          match_id: string
+          rating: number
+          user_id: string
+          would_meet_again?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          match_id?: string
+          rating?: number
+          user_id?: string
+          would_meet_again?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_queue: {
         Row: {
           created_at: string

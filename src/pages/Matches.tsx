@@ -159,14 +159,24 @@ export const Matches = () => {
               </div>
 
               {match.status === 'matched' && (
-                <Button
-                  size="sm"
-                  onClick={() => startChat(match.id)}
-                  className="food-button-primary h-8 px-3 text-xs"
-                >
-                  <MessageCircle className="h-3 w-3 mr-1" />
-                  Start Chat
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/match/${match.id}`)}
+                    variant="outline"
+                    className="h-8 px-3 text-xs"
+                  >
+                    View Match
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => startChat(match.id)}
+                    className="food-button-primary h-8 px-3 text-xs"
+                  >
+                    <MessageCircle className="h-3 w-3 mr-1" />
+                    Start Chat
+                  </Button>
+                </div>
               )}
             </div>
           </div>

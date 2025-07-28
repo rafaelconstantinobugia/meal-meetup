@@ -1,1 +1,4 @@
 project_id = "hbchqxckyepyosxwxhui"
+
+[functions.submit-feedback]
+verify_jwt = true

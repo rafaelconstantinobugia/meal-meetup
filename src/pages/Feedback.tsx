@@ -103,18 +103,26 @@ export const Feedback = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create feedback record
-      const { error } = await supabase
-        .from('feedback')
-        .insert({
+      // Submit feedback via edge function
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await fetch('https://hbchqxckyepyosxwxhui.supabase.co/functions/v1/submit-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
           match_id: matchId,
-          user_id: user.id,
           rating,
           feedback_text: feedback,
           would_meet_again: wouldMeetAgain
-        });
+        })
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to submit feedback');
 
       // Update match status to completed
       await supabase
