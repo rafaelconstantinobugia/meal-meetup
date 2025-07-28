@@ -3,12 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { MapView } from "./components/MapView";
+import { ExploreView } from "./components/ExploreView";
+import { ProfileView } from "./components/ProfileView";
 import { Auth } from "./pages/Auth";
 import { ProfileSetup } from "./pages/ProfileSetup";
 import { Matches } from "./pages/Matches";
 import { Chat } from "./pages/Chat";
 import { AdvancedSettings } from "./components/AdvancedSettings";
+import { BottomNav } from "./components/BottomNav";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,15 +22,20 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile-setup" element={<ProfileSetup />} />
-          <Route path="/matches" element={<Matches />} />
-          <Route path="/chat/:matchId" element={<Chat />} />
-          <Route path="/settings" element={<AdvancedSettings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+          <Routes>
+            <Route path="/" element={<MapView />} />
+            <Route path="/explore" element={<ExploreView />} />
+            <Route path="/matches" element={<Matches />} />
+            <Route path="/profile" element={<ProfileView />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/chat/:matchId" element={<Chat />} />
+            <Route path="/settings" element={<AdvancedSettings />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <BottomNav />
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
