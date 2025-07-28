@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MapView } from "./components/MapView";
-import { ExploreView } from "./components/ExploreView";
+import { EnhancedSwipeScreen } from "./components/EnhancedSwipeScreen";
 import { ProfileView } from "./components/ProfileView";
 import { Auth } from "./pages/Auth";
 import { ProfileSetup } from "./pages/ProfileSetup";
@@ -25,7 +25,7 @@ const App = () => (
         <div className="min-h-screen bg-gradient-to-br from-background to-muted">
           <Routes>
             <Route path="/" element={<MapView />} />
-            <Route path="/explore" element={<ExploreView />} />
+            <Route path="/swipe" element={<EnhancedSwipeScreen />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/profile" element={<ProfileView />} />
             <Route path="/auth" element={<Auth />} />
