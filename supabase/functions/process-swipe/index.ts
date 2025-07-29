@@ -113,34 +113,8 @@ async function findPotentialMatches(supabaseClient: any, userId: string, dishId:
 
   if (!candidates?.length) return []
 
-  // Get the current user's profile for compatibility scoring
-  const { data: currentUserProfile } = await supabaseClient
-    .from('profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-
-  // Calculate compatibility scores and sort by best matches
-  const scoredCandidates = await Promise.all(
-    candidates.map(async (candidate: any) => {
-      const { data: scoreResult } = await supabaseClient
-        .rpc('calculate_compatibility_score', {
-          user1_id: userId,
-          user2_id: candidate.user_id,
-          dish_id: dishId
-        })
-
-      return {
-        ...candidate,
-        compatibility_score: scoreResult || 50
-      }
-    })
-  )
-
-  // Return top 3 matches, sorted by compatibility
-  return scoredCandidates
-    .sort((a, b) => b.compatibility_score - a.compatibility_score)
-    .slice(0, 3)
+  // Simplified matching for MVP - just return candidates in order
+  return candidates.slice(0, 5) // Limit to 5 potential matches
 }
 
 async function createMatches(supabaseClient: any, userId: string, dishId: string, candidates: any[]) {
@@ -172,8 +146,7 @@ async function createMatches(supabaseClient: any, userId: string, dishId: string
         if (!error && newMatch) {
           matches.push({
             match_id: newMatch.id,
-            other_user: candidate.profiles,
-            compatibility_score: candidate.compatibility_score
+            other_user: candidate.profiles
           })
 
           // Remove both users from match queue for this dish

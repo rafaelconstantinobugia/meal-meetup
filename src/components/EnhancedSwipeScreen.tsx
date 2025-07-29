@@ -25,7 +25,6 @@ interface SwipeMatch {
     name: string;
     city: string;
   };
-  compatibility_score: number;
 }
 
 export const EnhancedSwipeScreen = () => {
@@ -175,7 +174,7 @@ export const EnhancedSwipeScreen = () => {
                   <p className="text-sm text-muted-foreground">{match.other_user.city}</p>
                 </div>
                 <Badge variant="secondary">
-                  {match.compatibility_score}% match
+                  Novo Match!
                 </Badge>
               </div>
             ))}
@@ -287,11 +286,21 @@ export const EnhancedSwipeScreen = () => {
 
       {/* Progress Bar */}
       <div className="px-6 pb-24">
-        <div className="w-full bg-secondary rounded-full h-2">
+        <div className="text-center mb-2">
+          <span className="text-sm text-muted-foreground">
+            {currentIndex + 1} de {dishes.length} pratos
+          </span>
+        </div>
+        <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
           <div
-            className="bg-primary h-2 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-primary to-primary-glow h-3 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${((currentIndex + 1) / Math.max(dishes.length, 1)) * 100}%` }}
           />
+        </div>
+        <div className="text-center mt-2">
+          <span className="text-xs text-muted-foreground">
+            {Math.round(((currentIndex + 1) / Math.max(dishes.length, 1)) * 100)}% completo
+          </span>
         </div>
       </div>
 

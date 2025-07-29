@@ -41,12 +41,12 @@ interface RestaurantSuggestion {
 }
 
 const icebreakers = [
-  "Been there before?",
-  "Are you a spicy person?",
-  "What's your favorite thing about this dish?",
-  "Any dietary preferences I should know about?",
-  "What time works best for you?",
-  "Do you know any good spots for this?"
+  "🌶️ És uma pessoa picante?",
+  "📍 Conheces bons sítios para isto?",
+  "⏰ Que hora funciona melhor?",
+  "🥗 Alguma preferência alimentar?",
+  "😋 Já experimentaste este prato?",
+  "🍽️ O que mais gostas neste prato?"
 ];
 
 export const Chat = () => {
@@ -376,15 +376,15 @@ export const Chat = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Start the conversation!</p>
-            <div className="space-y-2">
+            <p className="text-muted-foreground mb-4">Começa a conversa! 👋</p>
+            <div className="grid grid-cols-1 gap-2 max-w-xs mx-auto">
               {icebreakers.map((icebreaker, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
                   onClick={() => sendIcebreaker(icebreaker)}
-                  className="block mx-auto"
+                  className="text-left justify-start h-auto py-3 px-4 text-sm"
                 >
                   {icebreaker}
                 </Button>

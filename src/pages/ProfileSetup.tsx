@@ -137,14 +137,17 @@ export const ProfileSetup = () => {
   };
 
   const handleSave = async () => {
-    if (!profile.name.trim() || !profile.city.trim()) {
+    if (!profile.name.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in your name and city.",
+        title: "Nome obrigatório",
+        description: "Por favor, insira o seu nome.",
         variant: "destructive",
       });
       return;
     }
+
+    // Auto-set city to Lisboa if not provided (for testing)
+    const cityToSave = profile.city.trim() || "Lisboa";
 
     setLoading(true);
     try {
@@ -157,7 +160,7 @@ export const ProfileSetup = () => {
           user_id: user.id,
           name: profile.name.trim(),
           bio: profile.bio.trim(),
-          city: profile.city.trim(),
+          city: cityToSave,
           availability: profile.availability,
           food_preferences: profile.food_preferences,
           allergies: profile.allergies,
@@ -238,12 +241,14 @@ export const ProfileSetup = () => {
 
               {/* City */}
               <div>
-                <label className="text-sm font-medium mb-2 block">City *</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Cidade <span className="text-muted-foreground">(opcional - assumimos Lisboa)</span>
+                </label>
                 <div className="flex gap-2">
                   <Input
                     value={profile.city}
                     onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                    placeholder="Where are you based?"
+                    placeholder="Lisboa (padrão)"
                     className="flex-1"
                   />
                   <Button
