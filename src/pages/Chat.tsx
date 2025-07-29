@@ -40,13 +40,32 @@ interface RestaurantSuggestion {
   status: string;
 }
 
+// Portuguese restaurant suggestions for Lisboa
+const lisboaRestaurants = [
+  { name: "Tasca Real", address: "Rua da Esperança 112, Lisboa", cuisine: "Portuguesa", rating: 4.6 },
+  { name: "Pharmacia", address: "Rua Marechal Saldanha 1, Lisboa", cuisine: "Moderna", rating: 4.4 },
+  { name: "Taberna do Real Fado", address: "Rua do Salitre 91, Lisboa", cuisine: "Tradicional", rating: 4.5 },
+  { name: "Prado", address: "Travessa das Pedras Negras 2, Lisboa", cuisine: "Contemporânea", rating: 4.7 },
+  { name: "By the Wine", address: "Rua das Flores 41, Lisboa", cuisine: "Petiscos", rating: 4.3 },
+  { name: "Enoteca", address: "Rua das Flores 72, Lisboa", cuisine: "Italiana", rating: 4.5 },
+  { name: "Loco", address: "Rua dos Navegadores 53B, Lisboa", cuisine: "Fine Dining", rating: 4.8 },
+  { name: "Tabacaria Real", address: "Rua da Escola Politécnica 35, Lisboa", cuisine: "Fusion", rating: 4.4 }
+];
+
+// Function to suggest a random restaurant from Lisboa list
+const suggestRandomRestaurant = () => {
+  return lisboaRestaurants[Math.floor(Math.random() * lisboaRestaurants.length)];
+};
+
 const icebreakers = [
-  "🌶️ És uma pessoa picante?",
-  "📍 Conheces bons sítios para isto?",
-  "⏰ Que hora funciona melhor?",
-  "🥗 Alguma preferência alimentar?",
-  "😋 Já experimentaste este prato?",
-  "🍽️ O que mais gostas neste prato?"
+  "🌶️ És uma pessoa que gosta de comida picante?",
+  "📍 Conheces bons restaurantes para isto?",
+  "⏰ Que horário funciona melhor para ti?",
+  "🥗 Tens alguma preferência ou restrição alimentar?",
+  "😋 Já experimentaste este prato antes?",
+  "🍽️ O que mais te chama a atenção neste prato?",
+  "🚶‍♀️ Preferes algo perto do centro ou tens algum sítio favorito?",
+  "☕ Depois da refeição, que tal um café para conversar?"
 ];
 
 export const Chat = () => {
@@ -64,6 +83,7 @@ export const Chat = () => {
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSuggestion[]>([]);
   const [showRestaurantForm, setShowRestaurantForm] = useState(false);
+  const [showQuickSuggestions, setShowQuickSuggestions] = useState(false);
   const [restaurantForm, setRestaurantForm] = useState({
     name: "",
     address: "",
@@ -287,6 +307,34 @@ export const Chat = () => {
     sendMessage(icebreaker);
   };
 
+  const suggestQuickRestaurant = async () => {
+    const restaurant = suggestRandomRestaurant();
+    try {
+      await supabase.from('restaurant_suggestions').insert({
+        match_id: matchId,
+        suggested_by: currentUserId,
+        restaurant_name: restaurant.name,
+        restaurant_address: restaurant.address,
+        cuisine_type: restaurant.cuisine,
+        rating: restaurant.rating
+      });
+      
+      // Also send a message about the suggestion
+      await sendMessage(`Que tal o ${restaurant.name}? ${restaurant.cuisine} - ${restaurant.address} ⭐${restaurant.rating}`);
+      
+      toast({ 
+        title: "Restaurante Sugerido! 🍽️", 
+        description: `Sugeri o ${restaurant.name}` 
+      });
+    } catch (error) {
+      toast({ 
+        title: "Erro", 
+        description: "Não foi possível sugerir o restaurante.", 
+        variant: "destructive" 
+      });
+    }
+  };
+
   const confirmMeetup = async () => {
     try {
       const { error } = await supabase
@@ -297,8 +345,8 @@ export const Chat = () => {
       if (error) throw error;
 
       toast({
-        title: "Meetup Confirmed!",
-        description: "Have a great meal together!",
+        title: "Encontro Confirmado! 🎉",
+        description: "Desfrutem da refeição juntos!",
       });
 
       if (matchInfo) {
@@ -307,8 +355,8 @@ export const Chat = () => {
     } catch (error) {
       console.error('Error confirming meetup:', error);
       toast({
-        title: "Error",
-        description: "Failed to confirm meetup. Please try again.",
+        title: "Erro",
+        description: "Não foi possível confirmar o encontro. Tenta novamente.",
         variant: "destructive",
       });
     }
@@ -327,45 +375,48 @@ export const Chat = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen gradient-bg flex flex-col">
       {/* Header */}
-      <div className="gradient-bg p-4 pt-safe-top">
+      <div className="p-4 pt-safe">
         <div className="flex items-center gap-4 mb-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/matches")}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 backdrop-blur-sm"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-lg font-semibold text-white">{matchInfo.other_user.name}</h1>
+            <h1 className="text-xl font-bold text-white">{matchInfo.other_user.name}</h1>
             <p className="text-sm text-white/80 flex items-center gap-1">
               <MapPin className="h-3 w-3" />
               {matchInfo.other_user.city}
             </p>
           </div>
           {matchInfo.status === 'meetup_confirmed' && (
-            <Badge variant="default" className="bg-green-500">
+            <Badge variant="default" className="bg-green-500/90 backdrop-blur-sm border-green-400">
               <Check className="h-3 w-3 mr-1" />
-              Confirmed
+              Confirmado
             </Badge>
           )}
         </div>
 
         {/* Dish Info */}
-        <Card className="bg-white/10 border-white/20">
-          <CardContent className="p-3">
+        <Card className="glass-card border-white/20">
+          <CardContent className="p-4">
             <div className="flex gap-3 items-center">
               <img
                 src={matchInfo.dish.image_url}
                 alt={matchInfo.dish.name}
-                className="w-12 h-12 rounded-lg object-cover"
+                className="w-14 h-14 rounded-xl object-cover shadow-md"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=400&fit=crop';
+                }}
               />
               <div>
-                <p className="text-white font-medium">Sharing: {matchInfo.dish.name}</p>
-                <p className="text-white/80 text-sm">Find a place to meet!</p>
+                <p className="text-white font-semibold">Vão partilhar: {matchInfo.dish.name}</p>
+                <p className="text-white/80 text-sm">Escolham um sítio para se encontrarem! 📍</p>
               </div>
             </div>
           </CardContent>
@@ -373,22 +424,24 @@ export const Chat = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 bg-background/95 backdrop-blur-sm">
         {messages.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Começa a conversa! 👋</p>
-            <div className="grid grid-cols-1 gap-2 max-w-xs mx-auto">
-              {icebreakers.map((icebreaker, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => sendIcebreaker(icebreaker)}
-                  className="text-left justify-start h-auto py-3 px-4 text-sm"
-                >
-                  {icebreaker}
-                </Button>
-              ))}
+            <div className="glass-card p-6 max-w-sm mx-auto">
+              <p className="text-foreground font-medium mb-4">Começa a conversa! 👋</p>
+              <div className="grid grid-cols-1 gap-2">
+                {icebreakers.slice(0, 4).map((icebreaker, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => sendIcebreaker(icebreaker)}
+                    className="text-left justify-start h-auto py-2 px-3 text-sm hover:scale-105 transition-all duration-200"
+                  >
+                    {icebreaker}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -419,13 +472,13 @@ export const Chat = () => {
 
       {/* Confirm Meetup Button */}
       {matchInfo.status === 'matched' && messages.length > 0 && (
-        <div className="p-4 border-t">
+        <div className="p-4">
           <Button
             onClick={confirmMeetup}
-            className="food-button-secondary w-full py-3"
+            className="food-button-primary w-full py-3 shadow-warm"
           >
             <Check className="h-4 w-4 mr-2" />
-            Confirm Meetup
+            Confirmar Encontro
           </Button>
         </div>
       )}
@@ -435,7 +488,7 @@ export const Chat = () => {
         <div className="px-4 py-2">
           <div className="flex justify-start">
             <div className="bg-muted text-foreground px-4 py-2 rounded-2xl text-sm">
-              <span className="animate-pulse">{matchInfo.other_user.name} is typing...</span>
+              <span className="animate-pulse">{matchInfo.other_user.name} está a escrever...</span>
             </div>
           </div>
         </div>
@@ -543,16 +596,28 @@ export const Chat = () => {
       )}
 
       {/* Message Input */}
-      <div className="p-4 border-t bg-background">
-        <div className="flex gap-2 items-end">
+      <div className="p-4 bg-background/95 backdrop-blur-sm">
+        {/* Quick Actions */}
+        <div className="flex gap-2 mb-3">
           <Button
             variant="outline"
-            size="icon"
-            onClick={() => setShowRestaurantForm(!showRestaurantForm)}
-            className="mb-2"
+            size="sm"
+            onClick={suggestQuickRestaurant}
+            className="text-xs px-3 py-2 h-8 hover:scale-105 transition-all duration-200"
           >
-            <Plus className="h-4 w-4" />
+            🍽️ Sugerir Restaurante
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowRestaurantForm(!showRestaurantForm)}
+            className="text-xs px-3 py-2 h-8 hover:scale-105 transition-all duration-200"
+          >
+            📝 Personalizar
+          </Button>
+        </div>
+        
+        <div className="flex gap-2 items-end">
           <div className="flex-1">
             <Input
               value={newMessage}
@@ -560,16 +625,16 @@ export const Chat = () => {
                 setNewMessage(e.target.value);
                 handleTyping();
               }}
-              placeholder="Type a message..."
+              placeholder="Escreve uma mensagem..."
               onKeyPress={(e) => e.key === 'Enter' && sendMessage(newMessage)}
-              className="w-full"
+              className="w-full rounded-2xl border-muted"
             />
           </div>
           <Button
             onClick={() => sendMessage(newMessage)}
             disabled={!newMessage.trim()}
             size="icon"
-            className="food-button-primary mb-2"
+            className="food-button-primary rounded-full shadow-warm"
           >
             <Send className="h-4 w-4" />
           </Button>

@@ -91,6 +91,15 @@ async function processSwipeAndMatch(supabaseClient: any, userId: string, dishId:
 }
 
 async function findPotentialMatches(supabaseClient: any, userId: string, dishId: string) {
+  // Get current user's profile first for compatibility scoring
+  const { data: currentUserProfile } = await supabaseClient
+    .from('profiles')
+    .select('city, availability, food_preferences, allergies')
+    .eq('user_id', userId)
+    .single()
+
+  if (!currentUserProfile) return []
+
   // Find users who also liked this dish and are in the match queue
   const { data: candidates } = await supabaseClient
     .from('match_queue')
@@ -113,8 +122,45 @@ async function findPotentialMatches(supabaseClient: any, userId: string, dishId:
 
   if (!candidates?.length) return []
 
-  // Simplified matching for MVP - just return candidates in order
-  return candidates.slice(0, 5) // Limit to 5 potential matches
+  // Enhanced matching with compatibility scoring
+  const scoredCandidates = candidates.map(candidate => {
+    const profile = candidate.profiles
+    let compatibilityScore = 50 // Base score
+
+    // Same city bonus (high priority for in-person meetings)
+    if (profile.city === currentUserProfile.city) {
+      compatibilityScore += 30
+    }
+
+    // Availability compatibility
+    if (profile.availability === currentUserProfile.availability || 
+        profile.availability === 'both' || 
+        currentUserProfile.availability === 'both') {
+      compatibilityScore += 20
+    }
+
+    // Food preferences alignment
+    const commonPreferences = (profile.food_preferences || []).filter(pref => 
+      (currentUserProfile.food_preferences || []).includes(pref)
+    ).length
+    compatibilityScore += commonPreferences * 5
+
+    // Allergy compatibility (slight penalty if either has allergies)
+    const hasAllergies = (profile.allergies?.length > 0) || (currentUserProfile.allergies?.length > 0)
+    if (hasAllergies) {
+      compatibilityScore -= 5
+    }
+
+    return {
+      ...candidate,
+      compatibilityScore: Math.min(100, Math.max(0, compatibilityScore))
+    }
+  })
+
+  // Sort by compatibility score and return top matches
+  return scoredCandidates
+    .sort((a, b) => b.compatibilityScore - a.compatibilityScore)
+    .slice(0, 3) // Limit to top 3 matches for better experience
 }
 
 async function createMatches(supabaseClient: any, userId: string, dishId: string, candidates: any[]) {

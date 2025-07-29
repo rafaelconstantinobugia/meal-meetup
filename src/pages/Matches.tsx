@@ -105,11 +105,11 @@ export const Matches = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { variant: "secondary" as const, label: "Matching..." },
-      matched: { variant: "default" as const, label: "New Match!" },
-      meetup_confirmed: { variant: "default" as const, label: "Meetup Confirmed" },
-      completed: { variant: "outline" as const, label: "Completed" },
-      cancelled: { variant: "destructive" as const, label: "Cancelled" }
+      pending: { variant: "secondary" as const, label: "A procurar..." },
+      matched: { variant: "default" as const, label: "Novo Match! 🔥" },
+      meetup_confirmed: { variant: "default" as const, label: "Confirmado ✓" },
+      completed: { variant: "outline" as const, label: "Concluído" },
+      cancelled: { variant: "destructive" as const, label: "Cancelado" }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -117,15 +117,18 @@ export const Matches = () => {
   };
 
   const MatchCard = ({ match }: { match: Match }) => (
-    <Card className="shadow-card hover:shadow-soft transition-all duration-200">
+    <Card className="glass-card hover:scale-[1.02] transition-all duration-300 shadow-warm">
       <CardContent className="p-4">
         <div className="flex gap-4">
           {/* Dish Image */}
-          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 shadow-md">
             <img
               src={match.dish.image_url}
               alt={match.dish.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&h=400&fit=crop';
+              }}
             />
           </div>
 
@@ -133,7 +136,7 @@ export const Matches = () => {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <h3 className="font-semibold text-foreground">{match.other_user.name}</h3>
+                <h3 className="font-bold text-foreground text-lg">{match.other_user.name}</h3>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {match.other_user.city}
@@ -143,19 +146,19 @@ export const Matches = () => {
             </div>
 
             <p className="text-sm text-muted-foreground mb-2">
-              Wants to share: <span className="font-medium text-foreground">{match.dish.name}</span>
+              Quer partilhar: <span className="font-semibold text-primary">{match.dish.name}</span>
             </p>
 
             {match.other_user.bio && (
-              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                {match.other_user.bio}
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2 italic">
+                "{match.other_user.bio}"
               </p>
             )}
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {new Date(match.created_at).toLocaleDateString()}
+                {new Date(match.created_at).toLocaleDateString('pt-PT')}
               </div>
 
               {match.status === 'matched' && (
@@ -164,17 +167,17 @@ export const Matches = () => {
                     size="sm"
                     onClick={() => navigate(`/match/${match.id}`)}
                     variant="outline"
-                    className="h-8 px-3 text-xs"
+                    className="h-8 px-3 text-xs rounded-full"
                   >
-                    View Match
+                    Ver Match
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => startChat(match.id)}
-                    className="food-button-primary h-8 px-3 text-xs"
+                    className="food-button-primary h-8 px-3 text-xs rounded-full shadow-warm"
                   >
                     <MessageCircle className="h-3 w-3 mr-1" />
-                    Start Chat
+                    Conversar
                   </Button>
                 </div>
               )}
@@ -186,39 +189,53 @@ export const Matches = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen gradient-bg">
       {/* Header */}
-      <div className="pt-safe-top p-6 pb-4 gradient-bg">
+      <div className="pt-safe p-6 pb-4">
         <div className="flex items-center gap-4 mb-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 backdrop-blur-sm"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-white">Your Matches</h1>
+          <h1 className="text-3xl font-bold text-white appetite-text">
+            🎯 Os Teus Matches
+          </h1>
         </div>
+        <p className="text-white/80 text-sm">
+          Pessoas que também querem partilhar uma refeição contigo
+        </p>
       </div>
 
-      <div className="p-6 -mt-4">
+      <div className="px-6 pb-safe">
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="active">Active Matches</TabsTrigger>
-            <TabsTrigger value="past">Past Meals</TabsTrigger>
+          <TabsList className="glass-card grid w-full grid-cols-2 mb-6 h-12">
+            <TabsTrigger value="active" className="font-medium">Ativos</TabsTrigger>
+            <TabsTrigger value="past" className="font-medium">Histórico</TabsTrigger>
           </TabsList>
 
           <TabsContent value="active" className="space-y-4">
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto animate-spin"></div>
+                <p className="text-muted-foreground mt-4">A carregar matches...</p>
               </div>
             ) : activeMatches.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">No active matches yet</p>
+              <div className="glass-card p-8 text-center animate-fade-in-up">
+                <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Ainda sem matches
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Continua a fazer swipe para encontrares alguém para partilhar uma refeição!
+                </p>
                 <Button onClick={() => navigate("/")} className="food-button-primary">
-                  Start Swiping
+                  Descobrir Pratos
                 </Button>
               </div>
             ) : (
@@ -230,12 +247,19 @@ export const Matches = () => {
 
           <TabsContent value="past" className="space-y-4">
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto animate-spin"></div>
+                <p className="text-muted-foreground mt-4">A carregar histórico...</p>
               </div>
             ) : pastMeals.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No past meals yet</p>
+              <div className="glass-card p-8 text-center">
+                <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Ainda sem refeições passadas
+                </h3>
+                <p className="text-muted-foreground">
+                  As tuas refeições concluídas aparecerão aqui
+                </p>
               </div>
             ) : (
               pastMeals.map((match) => (
