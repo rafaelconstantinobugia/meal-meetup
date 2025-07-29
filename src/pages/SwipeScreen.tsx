@@ -26,10 +26,30 @@ export const SwipeScreen = () => {
 
   const fetchDishes = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get dishes that haven't been swiped on by this user today
+      const { data: swipedDishes, error: swipeError } = await supabase
+        .from('user_dish_preferences')
+        .select('dish_id')
+        .eq('user_id', user.id);
+
+      if (swipeError) throw swipeError;
+
+      const swipedDishIds = swipedDishes?.map(s => s.dish_id) || [];
+
+      // Fetch dishes excluding already swiped ones
+      let query = supabase
         .from('dishes')
         .select('*')
         .eq('available_date', new Date().toISOString().split('T')[0]);
+
+      if (swipedDishIds.length > 0) {
+        query = query.not('id', 'in', `(${swipedDishIds.map(id => `"${id}"`).join(',')})`);
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       setDishes(data || []);
@@ -96,19 +116,20 @@ export const SwipeScreen = () => {
             <Heart className="h-8 w-8 text-white animate-pulse" />
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            À procura de match! 💫
+            Looking for matches! 💫
           </h2>
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            Estamos a procurar alguém que também quer partilhar uma refeição. Vais ser notificado quando encontrarmos um match!
+            We're finding someone who also wants to share a meal. You'll be notified when we find a match!
           </p>
           <button
             onClick={() => {
               setCurrentDishIndex(0);
               setWaitingForMatch(false);
+              fetchDishes(); // Refresh dishes when going back
             }}
             className="food-button-primary w-full py-3"
           >
-            Ver Mais Pratos
+            See More Dishes
           </button>
         </div>
       </div>
@@ -122,10 +143,10 @@ export const SwipeScreen = () => {
       {/* Header */}
       <div className="pt-safe p-6 pb-4 text-center">
         <h1 className="text-3xl font-bold text-white mb-2 appetite-text">
-          🍽️ O que vais comer?
+          🍽️ What are you eating?
         </h1>
         <p className="text-white/80 text-sm">
-          Escolhe pratos que gostarias de partilhar hoje
+          Choose dishes you'd like to share today
         </p>
       </div>
 
@@ -135,16 +156,16 @@ export const SwipeScreen = () => {
           <SwipeCard
             dish={currentDish}
             onSwipe={handleSwipe}
-            progress={`${currentDishIndex + 1} de ${dishes.length}`}
+            progress={`${currentDishIndex + 1} of ${dishes.length}`}
           />
         ) : (
           <div className="glass-card p-8 text-center max-w-sm">
             <Utensils className="h-16 w-16 mx-auto mb-4 text-primary" />
             <h3 className="text-xl font-bold text-foreground mb-2">
-              Sem mais pratos hoje!
+              No more dishes today!
             </h3>
             <p className="text-muted-foreground">
-              Volta amanhã para descobrires novos sabores
+              Come back tomorrow to discover new flavors
             </p>
           </div>
         )}
