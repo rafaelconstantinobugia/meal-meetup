@@ -19,19 +19,23 @@ export const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have the required tokens for password reset
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
-    if (!accessToken || !refreshToken) {
-      toast({
-        title: "Invalid reset link",
-        description: "This password reset link is invalid or has expired.",
-        variant: "destructive",
-      });
-      navigate('/auth');
-    }
-  }, [searchParams, navigate, toast]);
+    // When user clicks the reset link in email, Supabase automatically handles the session
+    // We don't need to manually check for tokens, just check if user is authenticated
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Invalid reset link",
+          description: "This password reset link is invalid or has expired.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+      }
+    };
+
+    checkSession();
+  }, [navigate, toast]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
