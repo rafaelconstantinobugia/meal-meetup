@@ -12,6 +12,7 @@ export const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
+  const [resetLoading, setResetLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -146,6 +147,42 @@ export const Auth = () => {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!formData.email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Reset link sent! 📧",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      toast({
+        title: "Reset failed",
+        description: error.message || "Failed to send reset email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -236,6 +273,26 @@ export const Auth = () => {
                         "Sign In"
                       )}
                     </Button>
+
+                    <div className="text-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleResetPassword}
+                        disabled={resetLoading}
+                        className="text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        {resetLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          "Forgot password?"
+                        )}
+                      </Button>
+                    </div>
                   </form>
                 </TabsContent>
 
