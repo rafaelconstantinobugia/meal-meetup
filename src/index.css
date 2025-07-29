@@ -7,60 +7,67 @@
 
 @layer base {
   :root {
-    /* Modern Bumble-inspired color palette */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    /* Foodie Brand Colors - Warm & Vibrant */
+    --background: 25 15% 97%;
+    --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 20 14.3% 4.1%;
     
-    /* Primary - Warm Orange (Bumble-inspired) */
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Tomato Red */
+    --primary: 9 96% 57%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 14 91% 67%;
     
-    /* Secondary - Clean Gray */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    /* Secondary: Curry Orange */
+    --secondary: 33 100% 59%;
+    --secondary-foreground: 20 14.3% 4.1%;
     
-    /* Muted colors */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    /* Accent: Paprika */
+    --accent: 16 85% 55%;
+    --accent-foreground: 0 0% 98%;
     
-    /* Accent - Golden Yellow (appetite stimulating) */
-    --accent: 45 100% 60%;
-    --accent-foreground: 0 0% 9%;
+    /* Muted: Warm Cream */
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
     
-    /* Destructive - Clean Red */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive: Spicy Red */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
     
     /* Border and input */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 25 95% 53%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 9 96% 57%;
     
-    /* Chart colors */
-    --chart-1: 25 95% 53%;
-    --chart-2: 45 93% 47%;
-    --chart-3: 142 76% 36%;
-    --chart-4: 0 84% 60%;
-    --chart-5: 263 70% 50%;
+    /* Chart colors - Food inspired */
+    --chart-1: 9 96% 57%;   /* Tomato */
+    --chart-2: 33 100% 59%; /* Orange */
+    --chart-3: 45 93% 47%;  /* Golden */
+    --chart-4: 120 60% 50%; /* Herb Green */
+    --chart-5: 16 85% 55%;  /* Paprika */
     
-    /* Food-inspired gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 63%));
-    --gradient-warm: linear-gradient(135deg, hsl(25 95% 53%), hsl(45 100% 60%));
-    --gradient-fresh: linear-gradient(135deg, hsl(120 50% 55%), hsl(85 60% 60%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(30 20% 98%));
+    /* Vibrant Food Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(9 96% 57%), hsl(14 91% 67%));
+    --gradient-warm: linear-gradient(135deg, hsl(33 100% 59%), hsl(45 93% 47%));
+    --gradient-bg: linear-gradient(135deg, hsl(9 96% 57%) 0%, hsl(33 100% 59%) 50%, hsl(45 93% 47%) 100%);
+    --gradient-fresh: linear-gradient(135deg, hsl(120 60% 50%), hsl(85 60% 60%));
     
-    /* Clean shadows */
+    /* Glass Effects */
+    --glass-bg: hsla(0, 0%, 100%, 0.15);
+    --glass-border: hsla(0, 0%, 100%, 0.2);
+    --glass-shadow: 0 8px 32px hsla(9, 96%, 57%, 0.15);
+    
+    /* Enhanced shadows */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow: 0 2px 8px 0 hsl(9 96% 57% / 0.1), 0 1px 3px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 4px 12px -2px hsl(9 96% 57% / 0.15), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 25px -5px hsl(9 96% 57% / 0.2), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-warm: 0 8px 32px hsla(9, 96%, 57%, 0.25);
     
     /* Border radius */
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 
   .dark {
@@ -126,14 +133,32 @@
 }
 
 @layer components {
-  /* Food-inspired components */
+  /* Glassmorphism Components */
   .glass {
-    @apply backdrop-blur-sm bg-white/80 border border-white/20;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
   }
   
   .glass-card {
-    @apply backdrop-blur-sm bg-card/95 border border-border/30;
-    box-shadow: var(--shadow);
+    @apply backdrop-blur-lg border;
+    background: hsla(0, 0%, 100%, 0.2);
+    border-color: hsla(0, 0%, 100%, 0.3);
+    box-shadow: var(--shadow-warm);
+  }
+  
+  /* Food-themed gradient backgrounds */
+  .gradient-bg {
+    background: var(--gradient-bg);
+  }
+  
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-warm {
+    background: var(--gradient-warm);
   }
   
   /* Enhanced modern buttons */

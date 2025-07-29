@@ -48,8 +48,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-6">
-      <Card className="w-full max-w-sm glass-card">
+    <div className="min-h-screen gradient-bg flex items-center justify-center p-6">
+      <Card className="w-full max-w-sm glass-card animate-fade-in-up">
         <CardContent className="p-6 text-center">
           {/* Step indicator */}
           <div className="flex justify-center gap-2 mb-6">

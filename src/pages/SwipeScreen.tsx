@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { DishCard } from "@/components/DishCard";
+import { SwipeCard } from "@/components/SwipeCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Heart } from "lucide-react";
+import { Loader2, Heart, Utensils } from "lucide-react";
 
 interface Dish {
   id: string;
@@ -91,22 +91,24 @@ export const SwipeScreen = () => {
   if (waitingForMatch) {
     return (
       <div className="min-h-screen gradient-bg flex flex-col items-center justify-center p-6 text-center">
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 max-w-sm">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="glass-card p-8 max-w-sm animate-bounce-in">
+          <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
             <Heart className="h-8 w-8 text-white animate-pulse" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Waiting for a match!</h2>
-          <p className="text-white/80 mb-6">
-            We're looking for someone who also wants to share a meal. You'll be notified when we find a match!
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            À procura de match! 💫
+          </h2>
+          <p className="text-muted-foreground mb-6 leading-relaxed">
+            Estamos a procurar alguém que também quer partilhar uma refeição. Vais ser notificado quando encontrarmos um match!
           </p>
           <button
             onClick={() => {
               setCurrentDishIndex(0);
               setWaitingForMatch(false);
             }}
-            className="food-button-secondary w-full py-3"
+            className="food-button-primary w-full py-3"
           >
-            Swipe More Dishes
+            Ver Mais Pratos
           </button>
         </div>
       </div>
@@ -118,36 +120,41 @@ export const SwipeScreen = () => {
   return (
     <div className="min-h-screen gradient-bg">
       {/* Header */}
-      <div className="pt-safe-top p-6 pb-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">
-            Find Your Meal Buddy
-          </h1>
-          <div className="text-white/80 text-sm font-medium">
-            {currentDishIndex + 1} of {dishes.length}
-          </div>
-        </div>
+      <div className="pt-safe p-6 pb-4 text-center">
+        <h1 className="text-3xl font-bold text-white mb-2 appetite-text">
+          🍽️ O que vais comer?
+        </h1>
+        <p className="text-white/80 text-sm">
+          Escolhe pratos que gostarias de partilhar hoje
+        </p>
       </div>
 
-      {/* Dish Card */}
-      <div className="px-6 pb-6">
+      {/* Main Content */}
+      <div className="px-6 pb-6 flex-1 flex items-center justify-center">
         {currentDish ? (
-          <DishCard
+          <SwipeCard
             dish={currentDish}
             onSwipe={handleSwipe}
+            progress={`${currentDishIndex + 1} de ${dishes.length}`}
           />
         ) : (
-          <div className="text-center text-white py-12">
-            <p>No more dishes for today!</p>
+          <div className="glass-card p-8 text-center max-w-sm">
+            <Utensils className="h-16 w-16 mx-auto mb-4 text-primary" />
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              Sem mais pratos hoje!
+            </h3>
+            <p className="text-muted-foreground">
+              Volta amanhã para descobrires novos sabores
+            </p>
           </div>
         )}
       </div>
 
       {/* Progress Bar */}
-      <div className="px-6 pb-6">
-        <div className="w-full bg-white/20 rounded-full h-2">
+      <div className="px-6 pb-safe">
+        <div className="w-full bg-white/20 rounded-full h-3">
           <div
-            className="bg-white h-2 rounded-full transition-all duration-300"
+            className="gradient-primary h-3 rounded-full transition-all duration-500 shadow-warm"
             style={{ width: `${((currentDishIndex + 1) / dishes.length) * 100}%` }}
           />
         </div>
