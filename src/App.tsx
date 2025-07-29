@@ -12,6 +12,7 @@ import { SwipeScreen } from "./pages/SwipeScreen";
 import { WelcomeFlow } from "./components/WelcomeFlow";
 import { ProfileView } from "./components/ProfileView";
 import { Auth } from "./pages/Auth";
+import { ResetPassword } from "./pages/ResetPassword";
 import { ProfileSetup } from "./pages/ProfileSetup";
 import { Matches } from "./pages/Matches";
 import { MatchDetail } from "./pages/MatchDetail";
@@ -77,6 +78,10 @@ const App = () => {
               <Route 
                 path="/register" 
                 element={user ? <Navigate to="/swipe" replace /> : <Auth />} 
+              />
+              <Route 
+                path="/reset-password" 
+                element={user ? <Navigate to="/swipe" replace /> : <ResetPassword />} 
               />
               
               {/* Protected routes (only for authenticated users) */}
