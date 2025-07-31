@@ -16,9 +16,10 @@ interface SwipeCardProps {
   dish: Dish;
   onSwipe: (liked: boolean) => void;
   progress: string;
+  disabled?: boolean;
 }
 
-export const SwipeCard = ({ dish, onSwipe, progress }: SwipeCardProps) => {
+export const SwipeCard = ({ dish, onSwipe, progress, disabled = false }: SwipeCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const getMealIcon = (mealType: string) => {
@@ -104,7 +105,8 @@ export const SwipeCard = ({ dish, onSwipe, progress }: SwipeCardProps) => {
               variant="outline"
               size="lg"
               onClick={() => onSwipe(false)}
-              className="flex-1 rounded-2xl border-2 border-muted bg-white/50 hover:bg-white hover:scale-105 transition-all duration-200"
+              disabled={disabled}
+              className="flex-1 rounded-2xl border-2 border-muted bg-white/50 hover:bg-white hover:scale-105 transition-all duration-200 disabled:opacity-50"
             >
               <X className="h-5 w-5 mr-2" />
               Skip
@@ -113,10 +115,11 @@ export const SwipeCard = ({ dish, onSwipe, progress }: SwipeCardProps) => {
             <Button
               size="lg"
               onClick={() => onSwipe(true)}
-              className="flex-1 rounded-2xl gradient-primary text-white hover:scale-105 transition-all duration-200 shadow-warm"
+              disabled={disabled}
+              className="flex-1 rounded-2xl gradient-primary text-white hover:scale-105 transition-all duration-200 shadow-warm disabled:opacity-50"
             >
               <Heart className="h-5 w-5 mr-2" />
-              Eat!
+              {disabled ? 'Matching...' : 'Eat!'}
             </Button>
           </div>
         </div>
