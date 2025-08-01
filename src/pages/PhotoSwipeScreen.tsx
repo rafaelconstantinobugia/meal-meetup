@@ -28,68 +28,89 @@ interface PhotoMatch {
 
 export const PhotoSwipeScreen = () => {
   const navigate = useNavigate();
-  const [photos, setPhotos] = useState<FoodPhoto[]>([]);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [currentPhoto, setCurrentPhoto] = useState<FoodPhoto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [waitingForMore, setWaitingForMore] = useState(false);
+  const [noMorePhotos, setNoMorePhotos] = useState(false);
   const [swiping, setSwiping] = useState(false);
   const [recentMatch, setRecentMatch] = useState<PhotoMatch | null>(null);
   const [showMatchModal, setShowMatchModal] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPhotos();
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
   }, []);
 
-  const fetchPhotos = async () => {
+  useEffect(() => {
+    if (user) {
+      fetchNextPhoto();
+    }
+  }, [user]);
+
+  const fetchNextPhoto = async () => {
+    if (!user) return;
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get photos that haven't been swiped on by this user
-      const { data: swipedPhotos, error: swipeError } = await supabase
-        .from('photo_swipes')
-        .select('photo_id')
-        .eq('swiper_user_id', user.id);
-
-      if (swipeError) throw swipeError;
-
-      const swipedPhotoIds = swipedPhotos?.map(s => s.photo_id) || [];
-
-      // Fetch photos excluding already swiped ones and user's own photos
-      let query = supabase
-        .from('food_photos')
-        .select(`
-          id,
-          image_url,
-          caption,
-          tags,
-          user_id,
-          profiles!inner(city)
-        `)
-        .eq('is_active', true)
-        .neq('user_id', user.id);
-
-      if (swipedPhotoIds.length > 0) {
-        query = query.not('id', 'in', `(${swipedPhotoIds.map(id => `"${id}"`).join(',')})`);
-      }
-
-      const { data, error } = await query.limit(20);
+      setLoading(true);
       
-      if (error) throw error;
+      // Use optimized RPC function
+      const { data: photos, error } = await supabase.rpc('get_next_photo_for_swipe', {
+        current_user_id: user.id
+      });
 
-      // Transform data to include city
-      const transformedPhotos = data?.map(photo => ({
-        id: photo.id,
-        image_url: photo.image_url,
-        caption: photo.caption,
-        tags: photo.tags,
-        user_city: (photo as any).profiles?.city
-      })) || [];
+      if (error) {
+        console.error('RPC error, using fallback:', error);
+        // Fallback to manual query if RPC fails
+        const { data: fallbackPhotos, error: fallbackError } = await supabase
+          .from('food_photos')
+          .select(`
+            id,
+            image_url,
+            caption,
+            tags,
+            profiles!food_photos_user_id_fkey(city)
+          `)
+          .eq('is_active', true)
+          .neq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-      setPhotos(transformedPhotos);
+        if (fallbackError) throw fallbackError;
+        
+        if (fallbackPhotos && fallbackPhotos.length > 0) {
+          const photo = fallbackPhotos[0];
+          setCurrentPhoto({
+            id: photo.id,
+            image_url: photo.image_url,
+            caption: photo.caption,
+            tags: photo.tags,
+            user_city: (photo as any).profiles?.city
+          });
+          setNoMorePhotos(false);
+        } else {
+          setCurrentPhoto(null);
+          setNoMorePhotos(true);
+        }
+      } else if (photos && photos.length > 0) {
+        const photo = photos[0];
+        setCurrentPhoto({
+          id: photo.id,
+          image_url: photo.image_url,
+          caption: photo.caption,
+          tags: photo.tags,
+          user_city: photo.city
+        });
+        setNoMorePhotos(false);
+      } else {
+        setCurrentPhoto(null);
+        setNoMorePhotos(true);
+      }
     } catch (error) {
-      console.error('Error fetching photos:', error);
+      console.error('Error fetching photo:', error);
       toast({
         title: "Error",
         description: "Failed to load photos. Please try again.",
@@ -101,7 +122,6 @@ export const PhotoSwipeScreen = () => {
   };
 
   const handleSwipe = async (liked: boolean) => {
-    const currentPhoto = photos[currentPhotoIndex];
     if (!currentPhoto) return;
 
     setSwiping(true);
@@ -138,12 +158,8 @@ export const PhotoSwipeScreen = () => {
         });
       }
 
-      // Move to next photo
-      if (currentPhotoIndex < photos.length - 1) {
-        setCurrentPhotoIndex(currentPhotoIndex + 1);
-      } else {
-        setWaitingForMore(true);
-      }
+      // Fetch next photo after swipe
+      await fetchNextPhoto();
 
     } catch (error) {
       console.error('Error processing swipe:', error);
@@ -165,7 +181,7 @@ export const PhotoSwipeScreen = () => {
     );
   }
 
-  if (waitingForMore) {
+  if (noMorePhotos) {
     return (
       <div className="min-h-screen gradient-bg flex flex-col items-center justify-center p-6 text-center">
         <div className="glass-card p-8 max-w-sm animate-bounce-in">
@@ -178,16 +194,15 @@ export const PhotoSwipeScreen = () => {
           <p className="text-muted-foreground mb-6 leading-relaxed">
             You've seen all available food photos. Check back later for more delicious content!
           </p>
-          <button
+          <Button
             onClick={() => {
-              setCurrentPhotoIndex(0);
-              setWaitingForMore(false);
-              fetchPhotos(); // Refresh photos when going back
+              setNoMorePhotos(false);
+              fetchNextPhoto(); // Refresh photos when going back
             }}
             className="food-button-primary w-full py-3"
           >
             Refresh Photos
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -246,8 +261,6 @@ export const PhotoSwipeScreen = () => {
     );
   };
 
-  const currentPhoto = photos[currentPhotoIndex];
-
   return (
     <div className="min-h-screen gradient-bg">
       {/* Header */}
@@ -266,7 +279,6 @@ export const PhotoSwipeScreen = () => {
           <PhotoSwipeCard
             photo={currentPhoto}
             onSwipe={handleSwipe}
-            progress={`${currentPhotoIndex + 1} of ${photos.length}`}
             disabled={swiping}
           />
         ) : (
@@ -281,18 +293,6 @@ export const PhotoSwipeScreen = () => {
           </div>
         )}
       </div>
-
-      {/* Progress Bar */}
-      {photos.length > 0 && (
-        <div className="px-6 pb-safe">
-          <div className="w-full bg-white/20 rounded-full h-3">
-            <div
-              className="gradient-primary h-3 rounded-full transition-all duration-500 shadow-warm"
-              style={{ width: `${((currentPhotoIndex + 1) / photos.length) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
 
       <MatchModal />
     </div>

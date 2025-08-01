@@ -610,6 +610,16 @@ export type Database = {
         Args: { p_match_id: string }
         Returns: undefined
       }
+      get_next_photo_for_swipe: {
+        Args: { current_user_id: string }
+        Returns: {
+          id: string
+          image_url: string
+          caption: string
+          tags: string[]
+          city: string
+        }[]
+      }
       update_typing_indicator: {
         Args: { p_match_id: string; p_is_typing: boolean }
         Returns: undefined
