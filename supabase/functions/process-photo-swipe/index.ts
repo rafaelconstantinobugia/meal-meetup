@@ -37,114 +37,55 @@ serve(async (req) => {
 
     console.log(`Processing photo swipe: user ${user.id}, photo ${photo_id}, choice ${choice}`)
 
-    // Get the photo details to know who owns it
-    const { data: photo, error: photoError } = await supabase
-      .from('food_photos')
-      .select('user_id')
-      .eq('id', photo_id)
-      .single()
-
-    if (photoError || !photo) {
-      throw new Error('Photo not found')
-    }
-
-    // Prevent swiping on own photos
-    if (photo.user_id === user.id) {
-      throw new Error('Cannot swipe on your own photos')
-    }
-
-    // Insert the swipe (upsert to handle duplicates)
+    // Insert the swipe - trigger will handle matching automatically
     const { error: swipeError } = await supabase
       .from('photo_swipes')
-      .upsert({
+      .insert({
         swiper_user_id: user.id,
         photo_id: photo_id,
         choice: choice
       })
 
     if (swipeError) {
+      console.error('Error inserting swipe:', swipeError)
       throw swipeError
     }
 
     let matchResult = null
 
-    // Only check for matches if it was a like
+    // Check if a new match was created (only for likes)
     if (choice) {
-      console.log(`Checking for potential match between ${user.id} and ${photo.user_id}`)
+      console.log(`Checking for new match for user ${user.id}`)
 
-      // Count mutual likes between the two users
-      const { data: myLikesCount, error: myLikesError } = await supabase
-        .from('photo_swipes')
-        .select('id')
-        .eq('swiper_user_id', user.id)
-        .eq('choice', true)
-        .in('photo_id', 
-          supabase
-            .from('food_photos')
-            .select('id')
-            .eq('user_id', photo.user_id)
-        )
+      // Get the photo owner
+      const { data: photo, error: photoError } = await supabase
+        .from('food_photos')
+        .select('user_id')
+        .eq('id', photo_id)
+        .single()
 
-      const { data: theirLikesCount, error: theirLikesError } = await supabase
-        .from('photo_swipes')
-        .select('id')
-        .eq('swiper_user_id', photo.user_id)
-        .eq('choice', true)
-        .in('photo_id',
-          supabase
-            .from('food_photos')
-            .select('id')
-            .eq('user_id', user.id)
-        )
-
-      if (myLikesError || theirLikesError) {
-        console.error('Error counting likes:', myLikesError || theirLikesError)
-        throw new Error('Error checking for matches')
-      }
-
-      const myLikes = myLikesCount?.length || 0
-      const theirLikes = theirLikesCount?.length || 0
-      const totalMutualLikes = Math.min(myLikes, theirLikes)
-
-      console.log(`Mutual likes: my likes = ${myLikes}, their likes = ${theirLikes}, mutual = ${totalMutualLikes}`)
-
-      // Create match if there are 2+ mutual likes
-      if (totalMutualLikes >= 2) {
-        // Check if match already exists
-        const { data: existingMatch } = await supabase
+      if (photoError || !photo) {
+        console.error('Error fetching photo:', photoError)
+      } else {
+        // Check if match was just created by the trigger
+        const { data: newMatch, error: matchError } = await supabase
           .from('photo_matches')
-          .select('id')
+          .select('id, mutual_likes_count')
           .or(`and(user1_id.eq.${user.id},user2_id.eq.${photo.user_id}),and(user1_id.eq.${photo.user_id},user2_id.eq.${user.id})`)
-          .single()
+          .eq('status', 'matched')
+          .maybeSingle()
 
-        if (!existingMatch) {
-          console.log(`Creating new photo match between ${user.id} and ${photo.user_id}`)
-
-          // Create the match (ensure user1_id < user2_id for consistency)
-          const [user1Id, user2Id] = user.id < photo.user_id ? [user.id, photo.user_id] : [photo.user_id, user.id]
-
-          const { data: newMatch, error: matchError } = await supabase
-            .from('photo_matches')
-            .insert({
-              user1_id: user1Id,
-              user2_id: user2Id,
-              mutual_likes_count: totalMutualLikes,
-              status: 'matched'
-            })
-            .select()
-            .single()
-
-          if (matchError) {
-            console.error('Error creating match:', matchError)
-            throw matchError
-          }
+        if (matchError) {
+          console.error('Error checking for match:', matchError)
+        } else if (newMatch) {
+          console.log(`Found match: ${newMatch.id}`)
 
           // Get the other user's profile
           const { data: otherUserProfile, error: profileError } = await supabase
             .from('profiles')
             .select('name, city, profile_picture_url')
             .eq('user_id', photo.user_id)
-            .single()
+            .maybeSingle()
 
           if (profileError) {
             console.error('Error fetching other user profile:', profileError)
@@ -154,12 +95,10 @@ serve(async (req) => {
             matched: true,
             match_id: newMatch.id,
             other_user: otherUserProfile || { name: 'Food Lover', city: 'Unknown' },
-            mutual_likes_count: totalMutualLikes
+            mutual_likes_count: newMatch.mutual_likes_count
           }
 
-          console.log(`Match created successfully:`, matchResult)
-        } else {
-          console.log('Match already exists between these users')
+          console.log(`Match found:`, matchResult)
         }
       }
     }

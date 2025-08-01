@@ -325,6 +325,30 @@ export type Database = {
           },
         ]
       }
+      mutual_like_counters: {
+        Row: {
+          count: number
+          created_at: string
+          liker_id: string
+          target_id: string
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          liker_id: string
+          target_id: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          liker_id?: string
+          target_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       photo_matches: {
         Row: {
           created_at: string
