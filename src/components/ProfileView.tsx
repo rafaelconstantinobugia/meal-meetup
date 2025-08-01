@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChangePasswordModal } from './ChangePasswordModal';
+import { FoodPhotoUpload } from './FoodPhotoUpload';
 import { Camera, Edit3, Settings, Heart, MapPin, Star, Calendar, LogOut, Lock, Loader2, Plus, X } from 'lucide-react';
 
 interface Profile {
@@ -37,6 +38,7 @@ export const ProfileView = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [foodPhotos, setFoodPhotos] = useState<Array<{id?: string, image_url: string, caption: string, tags: string[]}>>([]);
   const [newPreference, setNewPreference] = useState("");
   const [newAllergy, setNewAllergy] = useState("");
   const navigate = useNavigate();
@@ -126,7 +128,6 @@ export const ProfileView = () => {
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
       
       toast({
         title: "Logged out",
@@ -283,6 +284,19 @@ export const ProfileView = () => {
 
           {/* Preferences */}
           <TabsContent value="preferences" className="space-y-4">
+            {/* Food Photos Section */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Your Food Photos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FoodPhotoUpload
+                  photos={foodPhotos}
+                  onPhotosChange={setFoodPhotos}
+                />
+              </CardContent>
+            </Card>
+
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-lg">Food Preferences</CardTitle>

@@ -9,6 +9,7 @@ import { User } from '@supabase/supabase-js';
 
 import { Landing } from "./pages/Landing";
 import { SwipeScreen } from "./pages/SwipeScreen";
+import { PhotoSwipeScreen } from "./pages/PhotoSwipeScreen";
 import { WelcomeFlow } from "./components/WelcomeFlow";
 import { ProfileView } from "./components/ProfileView";
 import { Auth } from "./pages/Auth";
@@ -92,6 +93,10 @@ const App = () => {
               <Route 
                 path="/swipe" 
                 element={user ? <SwipeScreen /> : <Navigate to="/auth" replace />} 
+              />
+              <Route 
+                path="/photo-swipe" 
+                element={user ? <PhotoSwipeScreen /> : <Navigate to="/auth" replace />} 
               />
               <Route 
                 path="/matches" 

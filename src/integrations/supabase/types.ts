@@ -85,6 +85,39 @@ export type Database = {
           },
         ]
       }
+      food_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_active: boolean
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_queue: {
         Row: {
           created_at: string
@@ -291,6 +324,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      photo_matches: {
+        Row: {
+          created_at: string
+          id: string
+          mutual_likes_count: number
+          status: string
+          updated_at: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mutual_likes_count?: number
+          status?: string
+          updated_at?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mutual_likes_count?: number
+          status?: string
+          updated_at?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
+      photo_swipes: {
+        Row: {
+          choice: boolean
+          created_at: string
+          id: string
+          photo_id: string
+          swiper_user_id: string
+        }
+        Insert: {
+          choice: boolean
+          created_at?: string
+          id?: string
+          photo_id: string
+          swiper_user_id: string
+        }
+        Update: {
+          choice?: boolean
+          created_at?: string
+          id?: string
+          photo_id?: string
+          swiper_user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

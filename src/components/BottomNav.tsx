@@ -1,9 +1,10 @@
-import { Heart, Users, User } from 'lucide-react';
+import { Heart, Users, User, Camera, Utensils } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', icon: Heart, label: 'Home' },
+  { to: '/swipe', icon: Utensils, label: 'Dishes' },
+  { to: '/photo-swipe', icon: Camera, label: 'Photos' },
   { to: '/matches', icon: Users, label: 'Matches' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];

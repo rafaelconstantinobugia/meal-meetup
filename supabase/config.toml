@@ -2,3 +2,6 @@ project_id = "hbchqxckyepyosxwxhui"
 
 [functions.submit-feedback]
 verify_jwt = true
+
+[functions.process-photo-swipe]
+verify_jwt = true
